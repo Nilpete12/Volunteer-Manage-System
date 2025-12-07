@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Facebook, Twitter, Instagram, Linkedin, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Footer = () => {
   return (
@@ -20,7 +21,7 @@ const Footer = () => {
             <div className="flex space-x-4">
               {/* Social Placeholders */}
               <a href="#" className="text-gray-400 hover:text-white transition-colors"><Facebook className="h-5 w-5" /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors"><Twitter className="h-5 w-5" /></a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors"><i class="bi bi-twitter-x"></i></a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors"><Instagram className="h-5 w-5" /></a>
             </div>
           </div>
@@ -56,8 +57,8 @@ const Footer = () => {
                 <span>support@voluntrack.org</span>
               </li>
               <li className="mt-2">
-                123 Charity Lane, <br />
-                New York, NY 10012
+                3828 Piermont Dr NE, Albuquerque,<br />
+                New Mexico, 87111
               </li>
             </ul>
           </div>
