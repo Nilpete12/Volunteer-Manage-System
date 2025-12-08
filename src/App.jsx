@@ -6,7 +6,7 @@ import Campaigns from './pages/Campaigns';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Navbar from './components/navbar';
+import Navbar from './components/Navbar';
 import Error from './pages/Error';
 import Footer from './components/Footer';
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const NotFound = () => {
   return (
-    <div className="relative text-center font-['Open_Sans'] h-screen bg-amber-100 flex flex-col justify-center items-center">
+    <div className="relative text-center font-['Open_Sans'] h-screen bg-green-100 flex flex-col justify-center items-center">
       
       {/* --- Wall Container Wrapper --- */}
       <div className="flex justify-center flex-wrap gap-8">
