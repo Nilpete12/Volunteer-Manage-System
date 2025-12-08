@@ -6,33 +6,37 @@ import Campaigns from './pages/Campaigns';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Navbar from './components/Navbar';
 import Error from './pages/Error';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-              <Navbar />
-  
-        <div className="content-container">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/campaigns" element={<Campaigns />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            {/* Catch-all route for 404 errors */}
-            <Route path="*" element={<Error />} />
-          </Routes>
-        </div>
+      <ScrollToTop />
+      <Navbar />
 
-
-              <Footer />
+      <div className="content-container">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/campaigns" element={<Campaigns />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          
+          {/* Catch-all route for 404 errors */}
+          <Route path="*" element={<Error />} />
+        </Routes>
       </div>
+
+      <Footer />
+    </div>
   );
 }
-
 export default App;
