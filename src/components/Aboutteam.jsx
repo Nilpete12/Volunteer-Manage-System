@@ -4,22 +4,29 @@ import { Linkedin, Github } from 'lucide-react';
 const AboutTeam = () => {
   const teamMembers = [
     {
-      name: "Your Name",
+      name: "Nilesh Sen",
       role: "Frontend Lead",
       desc: "Designed the user interface and interactive components using React & Tailwind.",
-      seed: "Felix" 
+      seed: "Saul" ,
+      Gitlink: "https://github.com/Nilpete12",
+      linkedin: "https://www.linkedin.com/in/nilesh-sen-123456789/"
     },
     {
-      name: "Teammate Name",
+      name: "Shreyash Mishra",
       role: "Backend Architect",
       desc: "Built the robust API and authentication systems to ensure data security.",
-      seed: "Aneka"
+      seed: "jacob",
+      Gitlink: "https://github.com/ShreyashMishra10",
+      linkedin: "https://www.linkedin.com/in/shreyash-mishra-940815297?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
     },
     {
-      name: "Teammate Name",
+      name: "Divya Rajpurohit",
       role: "Database Engineer",
       desc: "Optimized the database schema for real-time tracking and reporting.",
-      seed: "Bob"
+      seed: "Jack",
+      Gitlink: "https://github.com/I-divya-I",
+      linkedin: "https://www.linkedin.com/in/i-divya-i/"
+
     }
   ];
 
@@ -43,8 +50,24 @@ const AboutTeam = () => {
                 {member.desc}
               </p>
               <div className="flex justify-center space-x-4">
-                <a href="#" className="text-gray-400 hover:text-gray-800"><Github className="w-5 h-5"/></a>
-                <a href="#" className="text-gray-400 hover:text-blue-600"><Linkedin className="w-5 h-5"/></a>
+                {/* Use <a> tag for external links */}
+                    <a 
+                      href={member.Gitlink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-gray-400 hover:text-gray-800"
+                    >
+                      <Github className="w-5 h-5"/>
+                    </a>
+
+                    <a 
+                      href={member.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-gray-400 hover:text-blue-600"
+                    >
+                      <Linkedin className="w-5 h-5"/>
+                    </a>
               </div>
             </div>
           ))}

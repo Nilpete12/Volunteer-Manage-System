@@ -12,6 +12,7 @@ import Terms from './pages/Terms';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import CampaignDetails from './pages/Campdetails';
 
 const App = () => {
   return (
@@ -29,6 +30,8 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/campaigns/:id" element={<CampaignDetails />} />
+          
           
           {/* Catch-all route for 404 errors */}
           <Route path="*" element={<Error />} />

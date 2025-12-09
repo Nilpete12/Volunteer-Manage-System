@@ -23,7 +23,7 @@ const Hero = () => {
           {/* Small badge above headline */}
           <div className="inline-flex items-center text-emerald-400 bg-emerald-900/30 rounded-full p-1 pr-4 sm:text-base lg:text-sm xl:text-base font-medium mb-5 ring-1 ring-emerald-400/20">
             <span className="px-3 py-0.5 text-white text-xs font-semibold leading-5 uppercase tracking-wide bg-emerald-600 rounded-full">New</span>
-            <span className="ml-4 text-sm">Emergency Relief Campaign Active</span>
+            <Link to="/Campaigns" className="ml-4 text-sm">Emergency Relief Campaigns Active</Link>
             <ArrowRight className="ml-2 w-4 h-4" />
           </div>
 
