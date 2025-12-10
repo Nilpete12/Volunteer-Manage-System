@@ -158,9 +158,9 @@ const Register = () => {
         {/* Terms */}
         <p className="text-xs text-center text-gray-500">
           By registering, you agree to our{' '}
-          <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500">Terms of Service</a>
+          <Link to="/terms" className="font-medium text-emerald-600 hover:text-emerald-500">Terms of Service</Link>
           {' '}and{' '}
-          <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500">Privacy Policy</a>.
+          <Link to="/privacy" className="font-medium text-emerald-600 hover:text-emerald-500">Privacy Policy</Link>.
         </p>
 
       </form>

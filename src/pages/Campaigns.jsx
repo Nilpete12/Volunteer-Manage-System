@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import CampaignCard from '../components/Campaigncard'; 
 import { Search, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { PlusCircle } from 'lucide-react';
 
 const AllCampaigns = () => {
   const allCampaigns = [
@@ -94,13 +96,34 @@ const AllCampaigns = () => {
     <div className="min-h-screen bg-gray-50">
 
       {/* Page Header */}
-      <div className="bg-emerald-900 py-16 px-4 text-center">
-        <h1 className="text-3xl font-bold text-white sm:text-4xl">Find a Cause</h1>
-        <p className="mt-2 text-emerald-100">Discover projects that need your help today.</p>
+      <div className="bg-emerald-900 py-16 px-4 text-center relative overflow-hidden">
+        {/* Decorative background element */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+           <div className="absolute right-0 top-0 w-64 h-64 bg-white rounded-full mix-blend-overlay blur-3xl"></div>
+           <div className="absolute left-0 bottom-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-overlay blur-3xl"></div>
+        </div>
+
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold text-white sm:text-4xl">Find a Cause</h1>
+          <p className="mt-2 text-emerald-100 max-w-2xl mx-auto">
+            Discover projects that need your help today. Or, if you have a vision for change, start your own initiative.
+          </p>
+          
+          {/* --- NEW BUTTON HERE --- */}
+          <div className="mt-8">
+            <Link 
+              to="/CreateCamp"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-emerald-900 bg-emerald-100 hover:bg-white transition-all shadow-lg hover:shadow-emerald-900/50 transform hover:-translate-y-1"
+            >
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Start a Campaign
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Controls Section (Search & Filter) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 z-10 relative">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
             

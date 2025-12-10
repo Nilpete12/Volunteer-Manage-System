@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import Donateform from '../components/Donateform'; // <--- The Modal
 import { 
   Heart, Users, Clock, MapPin, CheckCircle, 
   Share2, Shield, Calendar, ArrowLeft 
 } from 'lucide-react';
-import Error from '../pages/Error';
-
-
+import Error from './Error';
 
 const CampaignDetails = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('about');
+  
+  // --- STATE FOR MODAL ---
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
-  // --- THE "DATABASE" (Array of all 6 Campaigns) ---
+  // --- FULL DATABASE OF CAMPAIGNS ---
   const campaignsData = [
     {
       id: 1,
@@ -26,7 +28,7 @@ const CampaignDetails = () => {
       volunteersRegistered: 12,
       volunteersNeeded: 20,
       daysLeft: 12,
-      description: "Access to clean water is a fundamental human right. In the remote villages of Kalahandi, families walk over 5km daily to fetch water that is often unsafe. This campaign aims to install 3 solar-powered borewells.",
+      description: "Access to clean water is a fundamental human right. In the remote villages of Kalahandi, families walk over 5km daily to fetch water that is often unsafe. This campaign aims to install 3 solar-powered borewells that will serve over 500 families.",
       budget: [
         { item: "Solar Pumps (3 units)", cost: 4500 },
         { item: "Drilling & Installation", cost: 3000 },
@@ -157,26 +159,34 @@ const CampaignDetails = () => {
     }
   ];
 
-  // --- LOGIC TO FIND THE CORRECT CAMPAIGN ---
-  // The 'id' from params is a string, so we parse it to Int
+  // --- LOGIC: Find the correct campaign based on URL ID ---
   const campaign = campaignsData.find(c => c.id === parseInt(id));
 
-  // If someone types an ID that doesn't exist (e.g. /campaigns/999)
+  // If campaign not found, show 404
   if (!campaign) {
     return <Error />;
   }
 
-  // --- CALCULATIONS ---
+  // Calculations
   const donationProgress = Math.min((campaign.raised / campaign.goal) * 100, 100);
   const volunteerProgress = Math.min((campaign.volunteersRegistered / campaign.volunteersNeeded) * 100, 100);
 
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Breadcrumb */}
+      {/* --- ADD MODAL COMPONENT --- */}
+      <Donateform 
+        isOpen={isDonationModalOpen} 
+        onClose={() => setIsDonationModalOpen(false)}
+        // We pass the specific ID and Title so the Modal can lock the selection
+        initialCampaignId={campaign.id.toString()}
+        campaignTitle={campaign.title}
+      />
+
+      {/* Breadcrumb / Header */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <p className="text-sm text-gray-500 truncate">
+          <p className="text-sm text-gray-500 truncate hidden sm:block">
             Campaigns / {campaign.category} / <span className="text-gray-900 font-medium">{campaign.title}</span>
           </p>
           <Link to="/campaigns" className="text-sm text-emerald-600 font-medium hover:text-emerald-700 flex items-center">
@@ -188,9 +198,10 @@ const CampaignDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           
-          {/* --- LEFT COLUMN --- */}
+          {/* --- LEFT COLUMN (Story, Image, Details) --- */}
           <div className="lg:col-span-2">
             
+            {/* Hero Image */}
             <div className="rounded-2xl overflow-hidden shadow-lg mb-8 relative group">
               <img 
                 src={campaign.image} 
@@ -202,6 +213,7 @@ const CampaignDetails = () => {
               </div>
             </div>
 
+            {/* Title & Info */}
             <div className="mb-8">
               <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{campaign.title}</h1>
               <div className="flex items-center text-gray-600 text-sm flex-wrap gap-2">
@@ -214,7 +226,7 @@ const CampaignDetails = () => {
               </div>
             </div>
 
-            {/* TABS */}
+            {/* TABS SYSTEM */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-10">
               <div className="flex border-b border-gray-100 overflow-x-auto">
                 {['about', 'budget', 'shifts'].map((tab) => (
@@ -286,7 +298,7 @@ const CampaignDetails = () => {
             </div>
           </div>
 
-          {/* --- RIGHT COLUMN (Sticky) --- */}
+          {/* --- RIGHT COLUMN (Sticky Action Card) --- */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               
@@ -326,12 +338,19 @@ const CampaignDetails = () => {
 
                 {/* Buttons */}
                 <div className="space-y-3">
-                  <button className="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center transform active:scale-95">
+                  {/* The button triggers the modal */}
+                  <button 
+                    onClick={() => setIsDonationModalOpen(true)}
+                    className="w-full bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg shadow-emerald-200 hover:shadow-xl hover:bg-emerald-700 transition-all flex items-center justify-center transform active:scale-95"
+                  >
                     <Heart className="w-5 h-5 mr-2" /> Donate Now
                   </button>
+                  
+                  <Link to="/register">
                   <button className="w-full bg-white border-2 border-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-all flex items-center justify-center transform active:scale-95">
                     <Users className="w-5 h-5 mr-2" /> Register as Volunteer
                   </button>
+                  </Link>
                 </div>
 
                 <div className="mt-6 text-center">
