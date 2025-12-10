@@ -2,7 +2,7 @@ import React from 'react';
 import Hero from '../components/Hero';
 import FeaturedCampaigns from '../components/Featuredcampaign';
 import HowItWorks from '../components/HIW';
-import ImpactSection from '../components/Impact';
+import Impact from '../components/Impact';
 
 const Home = () => {
   return (
@@ -10,7 +10,7 @@ const Home = () => {
       <Hero /> 
       <FeaturedCampaigns />
       <HowItWorks />
-      <ImpactSection />
+      <Impact />
       
     </div>
   );

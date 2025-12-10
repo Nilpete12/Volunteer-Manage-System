@@ -1,29 +1,32 @@
 import React, { useState } from 'react';
 import { CheckCircle, TrendingUp, Clock, Users } from 'lucide-react';
 
+
+const StatCard = ({ icon, number, label, delay }) => (
+  <div 
+    className={`flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 animate-fade-in-up`}
+    style={{ animationDelay: delay }} // Staggered entrance animation
+  >
+    <div className="p-3 rounded-full bg-emerald-100 text-emerald-600 mr-4">
+      {icon}
+    </div>
+    <div>
+      <p className="text-2xl font-bold text-gray-900">{number}</p>
+      <p className="text-sm text-gray-500">{label}</p>
+    </div>
+  </div>
+);
+
+
 const ImpactSection = () => {
   // State to control the position of the slider (0 to 100%)
   const [sliderPosition, setSliderPosition] = useState(50);
-
+  
   const handleSliderChange = (e) => {
     setSliderPosition(e.target.value);
   };
 
   // Stat card component for reusability
-  const StatCard = ({ icon, number, label, delay }) => (
-    <div 
-      className={`flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 animate-fade-in-up`}
-      style={{ animationDelay: delay }} // Staggered entrance animation
-    >
-      <div className="p-3 rounded-full bg-emerald-100 text-emerald-600 mr-4">
-        {icon}
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900">{number}</p>
-        <p className="text-sm text-gray-500">{label}</p>
-      </div>
-    </div>
-  );
 
   return (
     <section className="py-20 bg-gray-50 overflow-hidden">
@@ -41,10 +44,10 @@ const ImpactSection = () => {
 
             {/* Stats Grid with subtle animations */}
             <div className="grid sm:grid-cols-2 gap-4">
-              <StatCard icon={<CheckCircle className="w-6 h-6" />} number="1,420+" label="Projects Completed" delay="0ms" />
-              <StatCard icon={<Users className="w-6 h-6" />} number="85,000" label="Lives Impacted" delay="100ms" />
-              <StatCard icon={<Clock className="w-6 h-6" />} number="320k+" label="Volunteer Hours" delay="200ms" />
-              <StatCard icon={<TrendingUp className="w-6 h-6" />} number="94%" label="Fund Efficiency Rate" delay="300ms" />
+              <StatCard icon={<CheckCircle className="w-6 h-6" />} number="1,420+" label="Projects Completed"  />
+              <StatCard icon={<Users className="w-6 h-6" />} number="85,000" label="Lives Impacted"  />
+              <StatCard icon={<Clock className="w-6 h-6" />} number="320k+" label="Volunteer Hours" />
+              <StatCard icon={<TrendingUp className="w-6 h-6" />} number="94%" label="Fund Efficiency Rate" />
             </div>
           </div>
 
