@@ -44,7 +44,7 @@ const NotFound = () => {
         
         <Link 
           to="/" 
-          className="inline-block px-12 py-4 text-base font-bold text-[#797979] uppercase border-[3px] border-amber-400 hover:bg-amber-400 hover:text-white transition-colors duration-300 font-['Open_Sans']"
+          className="inline-block px-12 py-4 text-base font-bold text-[#797979] uppercase border-[3px] border-emerald-500 hover:bg-emerald-500 hover:text-white transition-colors duration-300 font-['Open_Sans']"
         >
           Return to the Homepage
         </Link>

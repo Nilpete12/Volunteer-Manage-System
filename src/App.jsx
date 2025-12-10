@@ -14,6 +14,7 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import CampaignDetails from './pages/Campdetails';
 import Createcamp from './pages/Createcamp';
+import Admin from './pages/Admin';
 
 const App = () => {
   return (
@@ -33,6 +34,8 @@ const App = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/campaigns/:id" element={<CampaignDetails />} />
           <Route path="/CreateCamp" element={<Createcamp />} />
+          <Route path="/admin" element={<Admin />} />
+
           
           
           {/* Catch-all route for 404 errors */}
