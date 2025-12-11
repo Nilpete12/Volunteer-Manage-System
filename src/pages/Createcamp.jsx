@@ -344,7 +344,6 @@ const CreateCampaign = () => {
           box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
         .label-text {
-          display: block;
           font-size: 0.875rem;
           font-weight: 500;
           color: #374151;
