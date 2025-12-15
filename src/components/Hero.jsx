@@ -38,7 +38,7 @@ const Hero = () => {
           </Link>
 
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
-            Empower Change. <br />
+            Empowerhu Change. <br />
             <span className="block text-emerald-400">Track Real Impact.</span>
           </h1>
           <p className="mt-6 max-w-3xl text-xl text-gray-300 leading-relaxed">
