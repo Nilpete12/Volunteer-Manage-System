@@ -1,185 +1,129 @@
-import React, { useState } from 'react';
-import CampaignCard from '../components/Campaigncard'; 
-import { Search, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import CampaignCard from '../components/Campaigncard';
+// 1. ADDED 'Plus' to imports
+import { Search, Filter, Plus } from 'lucide-react';
+// 2. ADDED 'Link' for navigation
 import { Link } from 'react-router-dom';
-import { PlusCircle } from 'lucide-react';
 
-const AllCampaigns = () => {
-  const allCampaigns = [
-    {
-      id: 1,
-      title: "Clean Water for Rural Villages",
-      description: "Help us install solar-powered water pumps in drought-affected regions. Every drop counts.",
-      image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 8500,
-      goal: 12000,
-      daysLeft: 12,
-      supporters: 142,
-      category: "Environment",
-      isUrgent: false
-    },
-    {
-      id: 2,
-      title: "Emergency Food Relief",
-      description: "Providing hot meals and essential supplies to families displaced by recent floods.",
-      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 4500,
-      goal: 5000,
-      daysLeft: 3,
-      supporters: 320,
-      category: "Disaster Relief",
-      isUrgent: true
-    },
-    {
-      id: 3,
-      title: "Community Education Center",
-      description: "We need 50 volunteers to help paint and set up the new library for underprivileged kids.",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 1200,
-      goal: 3000,
-      daysLeft: 20,
-      supporters: 45,
-      category: "Education",
-      isUrgent: false
-    },
-    {
-      id: 4,
-      title: "Save the stray dogs",
-      description: "Medical supplies and shelter renovation for the local animal sanctuary.",
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 800,
-      goal: 5000,
-      daysLeft: 15,
-      supporters: 28,
-      category: "Animal Welfare",
-      isUrgent: true
-    },
-    {
-      id: 5,
-      title: "Tech for Teens",
-      description: "Donating laptops and providing coding workshops for high school students.",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 15000,
-      goal: 20000,
-      daysLeft: 45,
-      supporters: 210,
-      category: "Education",
-      isUrgent: false
-    },
-    {
-      id: 6,
-      title: "Beach Cleanup Drive",
-      description: "Join 200 volunteers this weekend to clean up the coastlines.",
-      image: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 500,
-      goal: 2000,
-      daysLeft: 5,
-      supporters: 89,
-      category: "Environment",
-      isUrgent: false
-    }
-  ];
-
+const Campaigns = () => {
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
-  // Unique categories for the buttons
-  const categories = ["All", "Environment", "Disaster Relief", "Education", "Animal Welfare"];
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
 
-  const filteredCampaigns = allCampaigns.filter((campaign) => {
-    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || campaign.category === selectedCategory;
+  const fetchCampaigns = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/campaigns');
+      const data = await response.json();
+      setCampaigns(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      setLoading(false);
+    }
+  };
+
+  const filteredCampaigns = campaigns.filter(campaign => {
+    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          campaign.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "All" || campaign.category === categoryFilter;
+    
     return matchesSearch && matchesCategory;
   });
 
+  const categories = ["All", "Environment", "Education", "Healthcare", "Animal Welfare", "Disaster Relief"];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* Page Header */}
-      <div className="bg-emerald-900 py-16 px-4 text-center relative overflow-hidden">
-        {/* Decorative background element */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-           <div className="absolute right-0 top-0 w-64 h-64 bg-white rounded-full mix-blend-overlay blur-3xl"></div>
-           <div className="absolute left-0 bottom-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-overlay blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10">
-          <h1 className="text-3xl font-bold text-white sm:text-4xl">Find a Cause</h1>
-          <p className="mt-2 text-emerald-100 max-w-2xl mx-auto">
-            Discover projects that need your help today. Or, if you have a vision for change, start your own initiative.
+    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="text-center mb-12 relative"> 
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">Active Campaigns</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Discover causes that need your help right now. Join thousands of volunteers making a difference.
           </p>
+
+          {/* --- 3. NEW BUTTON ADDED HERE --- */}
+          <div className="mt-6 md:absolute md:right-0 md:top-0 md:mt-0">
+             <Link 
+               to="/create-campaign" 
+               className="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all"
+             >
+               <Plus className="h-5 w-5 mr-2" />
+               Start Campaign
+             </Link>
+          </div>
+          {/* ------------------------------- */}
+        </div>
+
+        {/* Search & Filter Section */}
+        <div className="bg-white p-4 rounded-xl shadow-sm mb-10 flex flex-col md:flex-row gap-4 items-center justify-between border border-gray-100">
           
-          {/* --- NEW BUTTON HERE --- */}
-          <div className="mt-8">
-            <Link 
-              to="/CreateCamp"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-emerald-900 bg-emerald-100 hover:bg-white transition-all shadow-lg hover:shadow-emerald-900/50 transform hover:-translate-y-1"
-            >
-              <PlusCircle className="w-5 h-5 mr-2" />
-              Start a Campaign
-            </Link>
+          {/* Search Bar */}
+          <div className="relative w-full md:w-96">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+              placeholder="Search campaigns..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto hide-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  categoryFilter === cat 
+                    ? 'bg-emerald-600 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Controls Section (Search & Filter) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 z-10 relative">
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            
-            {/* Search Bar */}
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input 
-                type="text" 
-                placeholder="Search campaigns..." 
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* Category Filter Buttons */}
-            <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto no-scrollbar">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                    selectedCategory === cat
-                      ? "bg-emerald-600 text-white shadow-md"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* Campaigns Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Campaigns Grid */}
         {filteredCampaigns.length > 0 ? (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredCampaigns.map((campaign) => (
-              <CampaignCard key={campaign.id} campaign={campaign} />
+              <CampaignCard key={campaign._id} campaign={campaign} />
             ))}
           </div>
         ) : (
-          // Empty State
           <div className="text-center py-20">
-            <Filter className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">No campaigns found</h3>
-            <p className="text-gray-500">Try adjusting your search or category filter.</p>
-            <button 
-              onClick={() => {setSearchTerm(""); setSelectedCategory("All")}}
-              className="mt-4 text-emerald-600 font-semibold hover:text-emerald-700"
-            >
-              Clear all filters
-            </button>
+             <div className="mx-auto h-24 w-24 text-gray-300 mb-4">
+               <Filter className="h-full w-full" />
+             </div>
+             <h3 className="text-lg font-medium text-gray-900">No campaigns found</h3>
+             <p className="mt-1 text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+             <button 
+               onClick={() => {setSearchTerm(""); setCategoryFilter("All");}}
+               className="mt-6 text-emerald-600 font-medium hover:underline"
+             >
+               Clear all filters
+             </button>
           </div>
         )}
       </div>
@@ -187,4 +131,4 @@ const AllCampaigns = () => {
   );
 };
 
-export default AllCampaigns;
+export default Campaigns;

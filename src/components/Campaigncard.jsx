@@ -1,76 +1,65 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Users, ArrowRight } from 'lucide-react';
+import { MapPin, Clock, Users } from 'lucide-react';
 
 const CampaignCard = ({ campaign }) => {
-  // Calculate percentage for progress bar
   const progress = Math.min((campaign.raised / campaign.goal) * 100, 100);
 
   return (
-    <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-2xl transition-shadow duration-300 border border-gray-100 group">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col h-full border border-gray-100 group">
       
-      {/* Image Section */}
-      <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative h-48 overflow-hidden">
         <img 
-          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
           src={campaign.image} 
           alt={campaign.title} 
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
         />
-        {/* Category Badge */}
-        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm uppercase tracking-wide">
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-emerald-700 shadow-sm">
           {campaign.category}
         </div>
-        {/* Urgent Badge */}
-        {campaign.isUrgent && (
-          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse">
-            URGENT
-          </div>
-        )}
       </div>
 
-      {/* Content Section */}
-      <div className="flex-1 p-6 flex flex-col justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
-            {campaign.title}
-          </h3>
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {campaign.description}
-          </p>
+      <div className="p-5 flex-1 flex flex-col">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">{campaign.title}</h3>
+        
+        <div className="flex items-center text-gray-500 text-sm mb-4">
+          <MapPin className="w-4 h-4 mr-1 text-emerald-600" />
+          <span className="truncate">{campaign.location}</span>
+        </div>
 
-          {/* Progress Bar */}
-          <div className="mb-4">
-            <div className="flex justify-between text-sm font-medium mb-1">
-              <span className="text-emerald-700">${campaign.raised.toLocaleString()} Raised</span>
-              <span className="text-gray-400">of ${campaign.goal.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-emerald-600 h-2.5 rounded-full transition-all duration-1000 ease-out" 
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
+        <p className="text-gray-600 text-sm mb-6 line-clamp-2 grow">
+          {campaign.description}
+        </p>
+
+        <div className="mb-4">
+          <div className="flex justify-between text-sm mb-1">
+            <span className="font-bold text-emerald-700">${campaign.raised.toLocaleString()}</span>
+            <span className="text-gray-500">of ${campaign.goal.toLocaleString()}</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2">
+            <div 
+              className="bg-emerald-500 h-2 rounded-full transition-all duration-1000" 
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
         </div>
 
-        {/* Meta Details */}
-        <div className="flex items-center justify-between mt-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-5 pt-4 border-t border-gray-100">
           <div className="flex items-center">
-            <Clock className="w-4 h-4 mr-1 text-emerald-500" />
-            <span>{campaign.daysLeft} days left</span>
+             <Clock className="w-3 h-3 mr-1" />
+             <span>{new Date(campaign.deadline).toLocaleDateString()}</span>
           </div>
           <div className="flex items-center">
-            <Users className="w-4 h-4 mr-1 text-emerald-500" />
-            <span>{campaign.supporters} Supporters</span>
+             <Users className="w-3 h-3 mr-1" />
+             <span>{campaign.volunteersNeeded} vols needed</span>
           </div>
         </div>
-
-        {/* Action Button */}
+        
         <Link 
-          to={`/campaigns/${campaign.id}`}
-          className="mt-6 w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-emerald-600 focus:outline-none transition-colors duration-200"
+          to={`/campaigns/${campaign._id}`} 
+          className="w-full block text-center bg-emerald-600 text-white font-bold py-2 rounded-lg hover:bg-emerald-700 transition-colors"
         >
-          View Details <ArrowRight className="ml-2 w-4 h-4" />
+          View Details
         </Link>
       </div>
     </div>

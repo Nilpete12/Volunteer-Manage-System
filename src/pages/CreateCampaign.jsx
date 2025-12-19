@@ -72,9 +72,28 @@ const CreateCampaign = () => {
   const addBudgetRow = () => setBudgetItems([...budgetItems, { item: '', cost: '' }]);
   const removeBudgetRow = (index) => setBudgetItems(budgetItems.filter((_, i) => i !== index));
 
+  // --- UPDATED SUBMIT FUNCTION ---
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("FULL APPLICATION:", { ...formData, budgetItems, files });
+
+    // 1. Get existing campaigns from local storage
+    const existingCampaigns = JSON.parse(localStorage.getItem('campaigns')) || [];
+
+    // 2. Create the full campaign object
+    const newCampaign = {
+      id: Date.now(), // Unique ID
+      ...formData,    // All your text fields
+      budgetItems,    // The budget array
+      files,          // The file names
+      status: 'pending', // <--- IMPORTANT: Starts as pending for Admin review
+      volunteersCount: 0,
+      raised: 0
+    };
+
+    // 3. Save to LocalStorage
+    localStorage.setItem('campaigns', JSON.stringify([...existingCampaigns, newCampaign]));
+
+    // 4. Notify and Redirect
     alert("Application Submitted! Our trust and safety team will review your documents within 48 hours.");
     navigate('/campaigns');
   };
@@ -184,8 +203,7 @@ const CreateCampaign = () => {
               <div>
                 <label className="label-text">Cover Image URL</label>
                 <div className="relative">
-
-                  <input required name="image" onChange={handleChange} type="url" className="input-field p-7" placeholder="https://..." />
+                  <input required name="image" onChange={handleChange} type="url" className="input-field" placeholder="https://..." />
                 </div>
               </div>
 

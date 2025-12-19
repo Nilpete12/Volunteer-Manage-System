@@ -1,94 +1,168 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
-import LogLayout from '../components/loglayout';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const navigate = useNavigate();
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  // 1. "GUEST GUARD": If user is already logged in, send them Home immediately
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      navigate('/');
+    }
+  }, [navigate]);
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
-  const handleSubmit = (e) => {
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login logic:', formData);
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      alert("Login Successful!");
+      
+      // 2. FORCE REDIRECT TO HOME PAGE
+      navigate('/'); 
+      
+      // Force a reload so the Navbar updates instantly (Optional but helpful)
+      window.location.reload(); 
+
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <LogLayout
-      title="Welcome Back"
-      subtitle={
-        <>
-          Don't have an account?{' '}
-          <Link to="/register" className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors">
-            Start your journey here
-          </Link>
-        </>
-      }
-      quote="We make a living by what we get, but we make a life by what we give."
-      author="Winston Churchill"
-    >
-      {/* --- FORM STARTS HERE --- */}
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="rounded-md shadow-sm space-y-4">
-          
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+    <div className="flex flex-col lg:flex-row h-[75vh] bg-gray-50">
+      
+      {/* LEFT SIDE: IMAGE */}
+      <div className="hidden lg:flex w-1/2 bg-gray-900 relative overflow-hidden">
+         <img 
+           src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+           alt="Charity work" 
+           className="absolute inset-0 w-full h-full object-cover"
+         />
+         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+         <div className="relative z-10 px-12 flex flex-col justify-center items-center h-full text-white text-center">
+            <h1 className="text-4xl font-extrabold leading-tight mb-4">
+              Welcome Back!
+            </h1>
+            <p className="text-emerald-200 text-lg max-w-md mx-auto">
+              Continue your journey of making a difference today.
+            </p>
+         </div>
+      </div>
+
+      {/* RIGHT SIDE: FORM */}
+      <div className="w-full lg:w-1/2 bg-white flex flex-col justify-center px-8 py-12 lg:px-24 overflow-y-auto">
+        <div className="max-w-md w-full mx-auto">
+          <div className="mb-8 text-center lg:text-left">
+             
+             <div className="flex justify-center lg:justify-start">
+               <Link to="/" title="Go back to Home">
+                 <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4 text-emerald-600 hover:bg-emerald-200 transition-colors cursor-pointer">
+                    <LogIn className="h-6 w-6" />
+                 </div>
+               </Link>
+             </div>
+             
+             <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
+             <p className="text-gray-600 mt-2">
+               New to our community?{' '}
+               <Link to="/register" className="text-emerald-600 font-bold hover:underline">
+                 Create an account
+               </Link>
+             </p>
+          </div>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
+                {error}
               </div>
-              <input
-                id="email" name="email" type="email" required
-                value={formData.email} onChange={handleChange}
-                className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
+            )}
 
-          {/* Password */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
               </div>
-              <input
-                id="password" name="password" type="password" required
-                value={formData.password} onChange={handleChange}
-                className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all"
-                placeholder="••••••••"
-              />
             </div>
-          </div>
-        </div>
 
-        {/* Extras */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded" />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
-          </div>
-          <div className="text-sm">
-            <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500">Forgot password?</a>
-          </div>
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
 
-        {/* Submit */}
-        <div>
-          <button type="submit" className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-            Sign in
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
+            <div className="flex items-center justify-between text-sm">
+               <label className="flex items-center text-gray-600 cursor-pointer">
+                  <input type="checkbox" className="mr-2 rounded text-emerald-600 focus:ring-emerald-500"/>
+                  Remember me
+               </label>
+               <a href="#" className="text-emerald-600 font-medium hover:underline">Forgot Password?</a>
+            </div>
 
-        <div className="text-center mt-4">
-           <Link to="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">← Back to Home</Link>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center shadow-lg shadow-emerald-200"
+            >
+              {loading ? "Signing In..." : "Sign In"}
+              {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+            </button>
+          </form>
         </div>
-      </form>
-      {/* --- FORM ENDS HERE --- */}
-    </LogLayout>
+      </div>
+    </div>
   );
 };
 
