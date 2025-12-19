@@ -84,7 +84,7 @@ const Register = () => {
            alt="Volunteers working" 
            className="absolute inset-0 w-full h-full object-cover"
          />
-         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent"></div>
 
          <div className="relative z-10 p-12 h-full flex flex-col justify-end text-white">
             <div className="mb-4">

@@ -61,24 +61,26 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-[75vh] bg-gray-50">
+    <div className="flex flex-col lg:flex-row min-h-screen">
       
       {/* LEFT SIDE: IMAGE */}
-      <div className="hidden lg:flex w-1/2 bg-gray-900 relative overflow-hidden">
+      <div className="relative w-full lg:w-1/2 bg-gray-900 overflow-hidden min-h-[300px] lg:min-h-full">
          <img 
            src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
            alt="Charity work" 
            className="absolute inset-0 w-full h-full object-cover"
          />
-         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent"></div>
 
-         <div className="relative z-10 px-12 flex flex-col justify-center items-center h-full text-white text-center">
-            <h1 className="text-4xl font-extrabold leading-tight mb-4">
-              Welcome Back!
-            </h1>
-            <p className="text-emerald-200 text-lg max-w-md mx-auto">
-              Continue your journey of making a difference today.
-            </p>
+         <div className="relative z-10 p-12 h-full flex flex-col justify-end text-white">
+            <div className="mb-4">
+              <h1 className="text-3xl lg:text-4xl font-extrabold leading-tight mb-4">
+                Welcome Back
+              </h1>
+              <p className="text-emerald-400 font-medium text-lg border-l-4 border-emerald-500 pl-4">
+                - Sign in to continue making a difference!
+              </p>
+            </div>
          </div>
       </div>
 
