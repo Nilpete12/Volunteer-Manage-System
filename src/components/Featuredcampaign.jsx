@@ -1,44 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios'; // Import Axios
 import { Target, Clock, Users, ArrowRight, Heart } from 'lucide-react';
 
 const FeaturedCampaigns = () => {
-  // --- Mock Data (Replace with API data later) ---
-  const campaigns = [
-    {
-      id: 1,
-      title: "Clean Water for Rural Villages",
-      description: "Help us install solar-powered water pumps in drought-affected regions. Every drop counts.",
-      image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 8500,
-      goal: 12000,
-      daysLeft: 12,
-      category: "Environment",
-      isUrgent: false
-    },
-    {
-      id: 2,
-      title: "Emergency Food Relief",
-      description: "Providing hot meals and essential supplies to families displaced by recent floods.",
-      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 4500,
-      goal: 5000,
-      daysLeft: 3,
-      category: "Disaster Relief",
-      isUrgent: true // This triggers the red badge
-    },
-    {
-      id: 3,
-      title: "Community Education Center",
-      description: "We need 50 volunteers to help paint and set up the new library for underprivileged kids.",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 1200,
-      goal: 3000,
-      daysLeft: 20,
-      category: "Education",
-      isUrgent: false
-    }
-  ];
+  // 1. STATE TO HOLD REAL DATA
+  const [campaigns, setCampaigns] = useState([]);
+
+  // 2. FETCH DATA FROM BACKEND
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/campaigns');
+        setCampaigns(res.data);
+      } catch (err) {
+        console.error("Error fetching campaigns:", err);
+      }
+    };
+    fetchCampaigns();
+  }, []);
+
+  // Helper function to calculate days left
+  const calculateDaysLeft = (deadline) => {
+    const difference = new Date(deadline) - new Date();
+    const days = Math.ceil(difference / (1000 * 3600 * 24));
+    return days > 0 ? days : 0; // Return 0 if deadline passed
+  };
 
   return (
     <section className="py-20 bg-white">
@@ -50,18 +37,25 @@ const FeaturedCampaigns = () => {
             Featured <span className="text-emerald-600">Campaigns</span>
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-            Causes that need your immediate attention. contribute today and track the impact.
+            Causes that need your immediate attention. Contribute today and track the impact.
           </p>
         </div>
 
         {/* Campaigns Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {campaigns.map((campaign) => {
+          
+          {/* --- THE FILTER LOGIC: ONLY SHOW ACTIVE CAMPAIGNS --- */}
+          {campaigns
+            .filter(campaign => campaign.status === 'active') 
+            .slice(0, 3) // Optional: Limit to top 3 for the homepage
+            .map((campaign) => {
+            
             // Calculate percentage for progress bar
-            const progress = Math.min((campaign.raised / campaign.goal) * 100, 100);
+            const progress = Math.min((campaign.raisedAmount / campaign.goalAmount) * 100, 100);
+            const daysLeft = calculateDaysLeft(campaign.deadline);
             
             return (
-              <div key={campaign.id} className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-2xl transition-shadow duration-300 border border-gray-100 group">
+              <div key={campaign._id} className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-2xl transition-shadow duration-300 border border-gray-100 group">
                 
                 {/* Image Section */}
                 <div className="relative h-48 w-full overflow-hidden">
@@ -72,14 +66,8 @@ const FeaturedCampaigns = () => {
                   />
                   {/* Category Badge */}
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-700 shadow-sm uppercase tracking-wide">
-                    {campaign.category}
+                    {campaign.category || 'General'}
                   </div>
-                  {/* Urgent Badge */}
-                  {campaign.isUrgent && (
-                    <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm animate-pulse">
-                      URGENT
-                    </div>
-                  )}
                 </div>
 
                 {/* Content Section */}
@@ -95,8 +83,8 @@ const FeaturedCampaigns = () => {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm font-medium mb-1">
-                        <span className="text-emerald-700">${campaign.raised.toLocaleString()} Raised</span>
-                        <span className="text-gray-400">of ${campaign.goal.toLocaleString()}</span>
+                        <span className="text-emerald-700">${campaign.raisedAmount.toLocaleString()} Raised</span>
+                        <span className="text-gray-400">of ${campaign.goalAmount.toLocaleString()}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div 
@@ -111,17 +99,17 @@ const FeaturedCampaigns = () => {
                   <div className="flex items-center justify-between mt-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1 text-emerald-500" />
-                      <span>{campaign.daysLeft} days left</span>
+                      <span>{daysLeft} days left</span>
                     </div>
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-1 text-emerald-500" />
-                      <span>{Math.floor(Math.random() * 50) + 10} Supporters</span>
+                      <span>{campaign.volunteersRegistered || 0} Supporters</span>
                     </div>
                   </div>
 
                   {/* Action Button */}
                   <Link 
-                    to={`/campaigns/${campaign.id}`}
+                    to={`/campaigns/${campaign._id}`}
                     className="mt-6 w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-emerald-600 focus:outline-none transition-colors duration-200"
                   >
                     View Details <ArrowRight className="ml-2 w-4 h-4" />
@@ -130,6 +118,8 @@ const FeaturedCampaigns = () => {
               </div>
             );
           })}
+          {/* --- END OF MAP --- */}
+
         </div>
         
         {/* View All Button */}

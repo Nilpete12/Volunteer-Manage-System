@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, HelpCircle } from 'lucide-react';
+import axios from 'axios'; // 1. Import Axios
+import { Mail, Phone, MapPin, Send, HelpCircle } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -13,17 +14,26 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // 2. UPDATED SUBMIT LOGIC
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Contact Form Submitted:', formData);
-    alert("Thanks for reaching out! We will get back to you shortly.");
-    // TODO: Connect to Email API (e.g., EmailJS or Backend)
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    try {
+      // Connect to the backend route we created
+      const response = await axios.post('http://localhost:5000/api/contacts', formData);
+      
+      if (response.status === 201) {
+        alert("Thanks for reaching out! Your message has been saved to our database. ✅");
+        // Clear the form after successful save
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }
+    } catch (error) {
+      console.error('Error saving message:', error);
+      alert("Failed to send message. Please ensure the backend server is running.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* --- Page Header --- */}
       <div className="bg-emerald-900 pt-20 pb-32 px-4 sm:px-6 lg:px-8 text-center">
         <h1 className="text-4xl font-extrabold text-white sm:text-5xl">
@@ -38,7 +48,7 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 mb-20">
         <div className="grid lg:grid-cols-3 gap-8">
           
-          {/* Left Col: Contact Info (Takes up 1 column) */}
+          {/* Left Col: Contact Info */}
           <div className="bg-emerald-800 text-white rounded-2xl p-8 shadow-2xl h-fit">
             <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
             <p className="text-emerald-100 mb-8 leading-relaxed">
@@ -68,23 +78,21 @@ const Contact = () => {
                   <p className="font-semibold">Office</p>
                   <p className="text-emerald-100">
                     3828 Piermont Dr NE, Albuquerque,<br />
-                New Mexico, 87111
+                    New Mexico, 87111
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Decorative Circles (CSS Art) */}
             <div className="relative mt-12 h-24 overflow-hidden rounded-xl bg-emerald-700/50">
                <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-emerald-600 rounded-full opacity-50"></div>
                <div className="absolute bottom-4 right-8 w-12 h-12 bg-emerald-500 rounded-full opacity-50"></div>
             </div>
           </div>
 
-          {/* Right Col: The Form (Takes up 2 columns) */}
+          {/* Right Col: The Form */}
           <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl p-8 sm:p-12">
             <form onSubmit={handleSubmit} className="space-y-6">
-              
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
@@ -116,6 +124,7 @@ const Contact = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
                 <select
                   name="subject"
+                  required
                   value={formData.subject}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white"
@@ -147,7 +156,6 @@ const Contact = () => {
               >
                 Send Message <Send className="ml-2 w-5 h-5" />
               </button>
-
             </form>
           </div>
         </div>
@@ -160,7 +168,6 @@ const Contact = () => {
             <HelpCircle className="w-6 h-6 mr-2 text-emerald-600" /> Frequently Asked Questions
           </h2>
         </div>
-        
         <div className="grid gap-6 md:grid-cols-2">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <h4 className="font-bold text-gray-900 mb-2">How do I get a tax receipt?</h4>
@@ -172,7 +179,6 @@ const Contact = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };

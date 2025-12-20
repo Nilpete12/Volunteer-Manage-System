@@ -1,16 +1,41 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 import LogLayout from '../components/loglayout';
 
 const Login = () => {
+  // --- 1. SETUP STATE ---
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState(''); 
+  const navigate = useNavigate();
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  // --- 2. UPDATED LOGIN LOGIC ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login logic:', formData);
+    setError(''); 
+
+    try {
+      // Connect to Backend
+      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      
+      // Save the Token and User Info
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+
+      alert('Login Successful! Welcome back.');
+      
+      // --- CRITICAL FIX: FORCE REFRESH ---
+      // We use window.location.href instead of navigate
+      // to make sure the Navbar updates immediately.
+      window.location.href = '/'; 
+
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    }
   };
 
   return (
@@ -31,6 +56,13 @@ const Login = () => {
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="rounded-md shadow-sm space-y-4">
           
+          {/* Show Error Message if Login Fails */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address</label>

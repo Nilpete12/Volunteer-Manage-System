@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
+import axios from 'axios'; 
 import { User, Mail, Lock, ArrowRight, Heart, Users } from 'lucide-react';
 import LogLayout from '../components/loglayout';
+
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -10,6 +13,8 @@ const Register = () => {
     password: '',
     confirmPassword: ''
   });
+  
+  const [error, setError] = useState(''); // To show backend errors
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,14 +24,42 @@ const Register = () => {
     setFormData({ ...formData, role });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    // 1. Client-side Validation
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    console.log('Register Payload:', formData);
-    // TODO: Send to Backend API
+
+    try {
+      // 2. Prepare Data (Map 'fullName' to 'name' for backend)
+      const payload = {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      };
+
+      // 3. Send to Server
+      const res = await axios.post('http://localhost:5000/api/auth/register', payload);
+
+      // 4. Success! Auto-Login the user
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+
+      alert('Welcome to VolunTrack! 🎉');
+      
+      // 5. Force a hard refresh so the Navbar updates immediately
+      window.location.href = '/'; 
+
+    } catch (err) {
+      console.error(err);
+      // Show error from server (e.g. "User already exists")
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -42,10 +75,17 @@ const Register = () => {
       }
       quote="Service to others is the rent you pay for your room here on earth."
       author="Muhammad Ali"
-      image="https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" // Different image for Register
+      image="https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
     >
       <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
         
+        {/* Error Message Box */}
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-200">
+            {error}
+          </div>
+        )}
+
         {/* Full Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>

@@ -33,7 +33,7 @@ const App = () => {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/campaigns/:id" element={<CampaignDetails />} />
-          <Route path="/CreateCamp" element={<Createcamp />} />
+          <Route path="/create-campaign" element={<Createcamp />} />
           <Route path="/admin" element={<Admin />} />
 
           

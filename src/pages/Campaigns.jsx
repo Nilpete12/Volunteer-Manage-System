@@ -1,103 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'; 
 import CampaignCard from '../components/Campaigncard'; 
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, PlusCircle, Loader } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { PlusCircle } from 'lucide-react';
 
 const AllCampaigns = () => {
-  const allCampaigns = [
-    {
-      id: 1,
-      title: "Clean Water for Rural Villages",
-      description: "Help us install solar-powered water pumps in drought-affected regions. Every drop counts.",
-      image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 8500,
-      goal: 12000,
-      daysLeft: 12,
-      supporters: 142,
-      category: "Environment",
-      isUrgent: false
-    },
-    {
-      id: 2,
-      title: "Emergency Food Relief",
-      description: "Providing hot meals and essential supplies to families displaced by recent floods.",
-      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 4500,
-      goal: 5000,
-      daysLeft: 3,
-      supporters: 320,
-      category: "Disaster Relief",
-      isUrgent: true
-    },
-    {
-      id: 3,
-      title: "Community Education Center",
-      description: "We need 50 volunteers to help paint and set up the new library for underprivileged kids.",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 1200,
-      goal: 3000,
-      daysLeft: 20,
-      supporters: 45,
-      category: "Education",
-      isUrgent: false
-    },
-    {
-      id: 4,
-      title: "Save the stray dogs",
-      description: "Medical supplies and shelter renovation for the local animal sanctuary.",
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 800,
-      goal: 5000,
-      daysLeft: 15,
-      supporters: 28,
-      category: "Animal Welfare",
-      isUrgent: true
-    },
-    {
-      id: 5,
-      title: "Tech for Teens",
-      description: "Donating laptops and providing coding workshops for high school students.",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 15000,
-      goal: 20000,
-      daysLeft: 45,
-      supporters: 210,
-      category: "Education",
-      isUrgent: false
-    },
-    {
-      id: 6,
-      title: "Beach Cleanup Drive",
-      description: "Join 200 volunteers this weekend to clean up the coastlines.",
-      image: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-      raised: 500,
-      goal: 2000,
-      daysLeft: 5,
-      supporters: 89,
-      category: "Environment",
-      isUrgent: false
-    }
-  ];
+  // 1. STATE FOR DATA
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Unique categories for the buttons
-  const categories = ["All", "Environment", "Disaster Relief", "Education", "Animal Welfare"];
+  const categories = ["All", "Environment", "Disaster Relief", "Education", "Animal Welfare", "Healthcare", "Other"];
 
-  const filteredCampaigns = allCampaigns.filter((campaign) => {
+  // 2. FETCH DATA FROM SERVER
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/campaigns');
+        
+        // Transform Backend Data
+        const formattedData = res.data.map(item => ({
+          ...item,
+          id: item._id, 
+          raised: item.raisedAmount || 0,
+          goal: item.goalAmount,
+          supporters: item.volunteersRegistered || 0,
+          daysLeft: calculateDaysLeft(item.deadline),
+          isUrgent: calculateDaysLeft(item.deadline) < 5 
+        }));
+
+        setCampaigns(formattedData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching campaigns:", err);
+        setError("Failed to load campaigns. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
+
+  // Helper: Calculate Days Left
+  const calculateDaysLeft = (deadline) => {
+    const diff = new Date(deadline) - new Date();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0; 
+  };
+
+  // 3. FILTER LOGIC (UPDATED WITH SECURITY CHECK)
+  const filteredCampaigns = campaigns.filter((campaign) => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || campaign.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    
+    // --- THIS IS THE CRITICAL FIX ---
+    // Only show campaigns that are explicitly 'active' (approved)
+    const isActive = campaign.status === 'active'; 
+
+    return matchesSearch && matchesCategory && isActive;
   });
 
+  // 4. LOADING STATE VIEW
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <div className="text-center">
+          <Loader className="h-10 w-10 animate-spin text-emerald-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading causes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 5. MAIN RENDER
   return (
     <div className="min-h-screen bg-gray-50">
 
       {/* Page Header */}
       <div className="bg-emerald-900 py-16 px-4 text-center relative overflow-hidden">
-        {/* Decorative background element */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
            <div className="absolute right-0 top-0 w-64 h-64 bg-white rounded-full mix-blend-overlay blur-3xl"></div>
            <div className="absolute left-0 bottom-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-overlay blur-3xl"></div>
@@ -109,10 +92,10 @@ const AllCampaigns = () => {
             Discover projects that need your help today. Or, if you have a vision for change, start your own initiative.
           </p>
           
-          {/* --- NEW BUTTON HERE --- */}
+          {/* Create Button */}
           <div className="mt-8">
             <Link 
-              to="/CreateCamp"
+              to="/create-campaign" 
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-emerald-900 bg-emerald-100 hover:bg-white transition-all shadow-lg hover:shadow-emerald-900/50 transform hover:-translate-y-1"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
@@ -122,7 +105,7 @@ const AllCampaigns = () => {
         </div>
       </div>
 
-      {/* Controls Section (Search & Filter) */}
+      {/* Controls Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 z-10 relative">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -139,7 +122,7 @@ const AllCampaigns = () => {
               />
             </div>
 
-            {/* Category Filter Buttons */}
+            {/* Category Filter */}
             <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto no-scrollbar">
               {categories.map((cat) => (
                 <button
@@ -162,6 +145,14 @@ const AllCampaigns = () => {
 
       {/* Campaigns Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8 text-center">
+            {error}
+          </div>
+        )}
+
         {filteredCampaigns.length > 0 ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredCampaigns.map((campaign) => (
@@ -169,18 +160,20 @@ const AllCampaigns = () => {
             ))}
           </div>
         ) : (
-          // Empty State
-          <div className="text-center py-20">
-            <Filter className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">No campaigns found</h3>
-            <p className="text-gray-500">Try adjusting your search or category filter.</p>
-            <button 
-              onClick={() => {setSearchTerm(""); setSelectedCategory("All")}}
-              className="mt-4 text-emerald-600 font-semibold hover:text-emerald-700"
-            >
-              Clear all filters
-            </button>
-          </div>
+          !loading && (
+            // Empty State
+            <div className="text-center py-20">
+              <Filter className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900">No active campaigns found</h3>
+              <p className="text-gray-500">Try adjusting your search or category filter.</p>
+              <button 
+                onClick={() => {setSearchTerm(""); setSelectedCategory("All")}}
+                className="mt-4 text-emerald-600 font-semibold hover:text-emerald-700"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>

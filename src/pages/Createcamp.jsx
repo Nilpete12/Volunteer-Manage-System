@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // <--- Added Axios
 import { 
   Building, User, FileText, Upload, DollarSign, 
-  CreditCard, CheckCircle, Plus, Trash2, AlertTriangle, 
-  Image as ImageIcon, Calendar 
+  CreditCard, CheckCircle, Plus, Trash2, AlertTriangle 
 } from 'lucide-react';
+// import { FileText, PlusCircle, Layout } from 'lucide-react';
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
@@ -72,11 +73,44 @@ const CreateCampaign = () => {
   const addBudgetRow = () => setBudgetItems([...budgetItems, { item: '', cost: '' }]);
   const removeBudgetRow = (index) => setBudgetItems(budgetItems.filter((_, i) => i !== index));
 
-  const handleSubmit = (e) => {
+  // --- CONNECT TO BACKEND HERE ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("FULL APPLICATION:", { ...formData, budgetItems, files });
-    alert("Application Submitted! Our trust and safety team will review your documents within 48 hours.");
-    navigate('/campaigns');
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("You must be logged in to create a campaign!");
+        navigate('/login');
+        return;
+      }
+
+      // Map your complex form data to the simpler Backend Model
+      const campaignPayload = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        location: formData.location,
+        organizer: formData.orgName, // We use Org Name as the organizer
+        image: formData.image,
+        goalAmount: formData.goal,
+        volunteersNeeded: formData.volunteersNeeded,
+        deadline: formData.deadline,
+        budget: budgetItems, // Send the budget list!
+      };
+
+      // Send to Server
+      await axios.post('http://localhost:5000/api/campaigns', campaignPayload, {
+        headers: { Authorization: token }
+      });
+
+      alert("Campaign Created Successfully! 🎉");
+      navigate('/campaigns');
+
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      alert("Failed to create campaign. Please try again.");
+    }
   };
 
   return (
@@ -329,7 +363,7 @@ const CreateCampaign = () => {
       </div>
 
       
-      {/* Reusable CSS Class for Inputs to keep code clean */}
+      {/* Reusable CSS Class for Inputs */}
       <style>{`
         .input-field {
           width: 100%;

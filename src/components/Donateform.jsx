@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // <--- Import Axios
 import { X, DollarSign, Package, Heart, Lock } from 'lucide-react';
 
 const Donateform = ({ isOpen, onClose, initialCampaignId = '', campaignTitle = '' }) => {
   const navigate = useNavigate();
-  const isLoggedIn = false; // Mock Auth State
-
+  // We will allow guests to donate for now (Backend route is public)
+  
   const [donationType, setDonationType] = useState('money');
   const [amount, setAmount] = useState('');
   const [campaign, setCampaign] = useState('');
+  const [loading, setLoading] = useState(false); // To show "Processing..."
 
-  // --- FIX: Lock Body Scroll ---
+  // --- Lock Body Scroll ---
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // If a specific campaign ID was passed, set it immediately
       if (initialCampaignId) setCampaign(initialCampaignId);
     } else {
       document.body.style.overflow = 'unset';
@@ -24,18 +25,43 @@ const Donateform = ({ isOpen, onClose, initialCampaignId = '', campaignTitle = '
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  // --- THE NEW LOGIC CONNECTING TO DATABASE ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const finalCampaignName = campaignTitle || "General/Selected Campaign"; // For alert/logic
-    
-    if (isLoggedIn) {
-      alert(`Thank you! Your donation of ${donationType === 'money' ? '$' + amount : 'supplies'} to "${finalCampaignName}" has been recorded.`);
-      onClose();
-    } else {
-      const confirmRegister = window.confirm("You need an account to track your donation impact. Proceed to Register?");
-      if (confirmRegister) {
-        navigate('/register', { state: { donationAttempt: { type: donationType, amount, campaign: initialCampaignId || campaign } } });
+    setLoading(true);
+
+    const targetCampaignId = initialCampaignId || campaign;
+
+    // 1. Check if it's a Money Donation (Updates the Progress Bar)
+    if (donationType === 'money') {
+      try {
+        if (!targetCampaignId) {
+          alert("Please select a campaign to donate to.");
+          setLoading(false);
+          return;
+        }
+
+        // Send money to the server!
+        await axios.put(`http://localhost:5000/api/campaigns/${targetCampaignId}/donate`, {
+          amount: amount
+        });
+
+        alert(`Thank you! Your donation of $${amount} has been successfully recorded! 🎉`);
+        onClose();
+        window.location.reload(); // Refresh the page so the user sees the updated progress bar!
+
+      } catch (error) {
+        console.error("Donation failed:", error);
+        alert("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
       }
+    } 
+    // 2. Handle Item Donations (Just an alert for now)
+    else {
+      alert(`Thank you! We have noted your offer of: "${amount}". An organizer will contact you shortly.`);
+      onClose();
+      setLoading(false);
     }
   };
 
@@ -114,11 +140,10 @@ const Donateform = ({ isOpen, onClose, initialCampaignId = '', campaignTitle = '
               )}
             </div>
 
-            {/* Campaign Selection (CONDITIONAL RENDERING) */}
+            {/* Campaign Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Beneficiary Campaign</label>
               
-              {/* IF a specific title is passed, show it as Locked. ELSE show the dropdown. */}
               {campaignTitle ? (
                 <div className="w-full px-4 py-3 border border-emerald-200 bg-emerald-50 rounded-lg text-emerald-800 font-medium flex items-center justify-between">
                   <span>{campaignTitle}</span>
@@ -130,23 +155,21 @@ const Donateform = ({ isOpen, onClose, initialCampaignId = '', campaignTitle = '
                   onChange={(e) => setCampaign(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
                 >
-                  <option value="">General Donation (Where needed most)</option>
-                  <option value="1">Clean Water Project</option>
-                  <option value="2">Emergency Food Relief</option>
-                  <option value="4">Animal Shelter Support</option>
+                  <option value="">Select a Campaign...</option>
+                  {/* Note: Ideally you'd fetch the list of campaigns here too if you wanted a dropdown, 
+                      but for now this form is mostly used from the Details page where the ID is fixed. */}
                 </select>
               )}
             </div>
 
-            <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 transform active:scale-95">
-              Proceed to Donate
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 transform active:scale-95 flex justify-center items-center"
+            >
+              {loading ? "Processing..." : "Proceed to Donate"}
             </button>
             
-            {!isLoggedIn && (
-              <p className="text-xs text-center text-gray-500 mt-2">
-                * You will be asked to register to track this donation.
-              </p>
-            )}
           </form>
         </div>
       </div>

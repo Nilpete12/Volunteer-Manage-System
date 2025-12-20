@@ -1,119 +1,182 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Lock, Mail, ArrowRight, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Trash2, Users, FileText, CheckCircle, ArrowLeft, Check, AlertCircle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Admin = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('campaigns');
+  
+  // Initialize as empty arrays to prevent .length or .map() crashes
+  const [campaigns, setCampaigns] = useState([]);
+  const [users, setUsers] = useState([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(''); // Clear error when typing
-  };
+  useEffect(() => {
+    const checkAdmin = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const user = storedUser ? JSON.parse(storedUser) : null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // --- MOCK ADMIN CHECK ---
-    // In a real app, this goes to your backend endpoint (e.g. /api/admin/login)
-    if (formData.email === 'admin@voluntrack.org' && formData.password === 'admin123') {
-      console.log("Admin Login Successful");
-      alert("Welcome, Administrator. Redirecting to Dashboard...");
-      // navigate('/admin/dashboard'); // Future step
-    } else {
-      setError('Invalid credentials or insufficient permissions.');
+        // Verify admin role found in your navbar state
+        if (!user || user.role !== 'admin') {
+          alert("⛔ Access Denied: Admins Only");
+          navigate('/');
+        } else {
+          fetchData();
+        }
+      } catch (err) {
+        console.error("Auth Error:", err);
+        navigate('/login');
+      }
+    };
+    checkAdmin();
+  }, [navigate]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetching both datasets simultaneously
+      const [campRes, userRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/campaigns'),
+        axios.get('http://localhost:5000/api/auth/users')
+      ]);
+      
+      // Use fallback empty arrays if data is missing
+      setCampaigns(Array.isArray(campRes.data) ? campRes.data : []);
+      setUsers(Array.isArray(userRes.data) ? userRes.data : []);
+      setLoading(false);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      setError("Database connection failed. Please ensure MongoDB is connected.");
+      setLoading(false);
     }
   };
 
+  const handleApproveCampaign = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/campaigns/${id}/approve`);
+      setCampaigns(prev => prev.map(c => c._id === id ? { ...c, status: 'active' } : c));
+      alert("Approved! ✅");
+    } catch (err) { alert("Approval failed."); }
+  };
+
+  const handleDeleteCampaign = async (id) => {
+    if (!window.confirm("Delete this campaign?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/campaigns/${id}`);
+      setCampaigns(prev => prev.filter(c => c._id !== id));
+    } catch (err) { alert("Delete failed."); }
+  };
+
+  // Safe calculation to prevent math errors during loading
+  const totalImpact = (campaigns || []).reduce((acc, curr) => acc + (Number(curr.raisedAmount) || 0), 0);
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-emerald-600 font-bold">
+      Fetching Admin Records...
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
+      <AlertCircle className="w-12 h-12 text-red-500 mb-2" />
+      <p className="text-gray-700 font-medium mb-4">{error}</p>
+      <button onClick={fetchData} className="bg-emerald-600 text-white px-4 py-2 rounded shadow">Retry Connection</button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      
-      {/* Background Decoration (Abstract Network) */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
-      </div>
-
-      <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 relative z-10">
-        
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-700 mb-4 ring-4 ring-slate-800 shadow-lg">
-            <Shield className="w-8 h-8 text-blue-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-wide">Admin Portal</h2>
-          <p className="text-slate-400 text-sm mt-2">Restricted Access. Authorized Personnel Only.</p>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/50 rounded-lg p-3 flex items-start">
-            <AlertTriangle className="w-5 h-5 text-red-500 mr-2 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-400">{error}</p>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Admin ID / Email
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-slate-500" />
-              </div>
-              <input
-                type="email"
-                name="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="admin@org.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-500" />
-              </div>
-              <input
-                type="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center"
-          >
-            Access Dashboard <ArrowRight className="ml-2 w-4 h-4" />
-          </button>
-
-        </form>
-
-        {/* Footer Link */}
-        <div className="mt-8 pt-6 border-t border-slate-700 text-center">
-          <Link to="/" className="text-sm text-slate-500 hover:text-white transition-colors">
-            ← Return to Main Site
+    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+          <Link to="/" className="text-gray-500 hover:text-emerald-600 flex items-center">
+            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Home
           </Link>
         </div>
 
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <FileText className="text-emerald-500 mb-2" />
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Campaigns</div>
+            <div className="text-2xl font-black">{campaigns.length}</div>
+          </div>
+          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <Users className="text-blue-500 mb-2" />
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Users</div>
+            <div className="text-2xl font-black">{users.length}</div>
+          </div>
+          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <CheckCircle className="text-amber-500 mb-2" />
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Impact</div>
+            <div className="text-2xl font-black">${totalImpact.toLocaleString()}</div>
+          </div>
+        </div>
+
+        {/* Tab Logic */}
+        <div className="flex space-x-4 mb-6">
+          <button 
+            onClick={() => setActiveTab('campaigns')}
+            className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTab === 'campaigns' ? 'bg-emerald-600 text-white shadow' : 'bg-white text-gray-500 border'}`}
+          >
+            Manage Campaigns
+          </button>
+          <button 
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTab === 'users' ? 'bg-emerald-600 text-white shadow' : 'bg-white text-gray-500 border'}`}
+          >
+            User Database
+          </button>
+        </div>
+
+        {/* Dynamic Content Area */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+          {activeTab === 'campaigns' ? (
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
+                <tr><th className="px-6 py-4">Status</th><th className="px-6 py-4">Title</th><th className="px-6 py-4 text-right">Actions</th></tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {campaigns.map(c => (
+                  <tr key={c._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {c.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-bold">{c.title}</td>
+                    <td className="px-6 py-4 text-right">
+                      {c.status !== 'active' && (
+                        <button onClick={() => handleApproveCampaign(c._id)} className="text-emerald-600 hover:underline mr-4 font-bold">Approve</button>
+                      )}
+                      <button onClick={() => handleDeleteCampaign(c._id)} className="text-red-400 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4 inline"/></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
+                <tr><th className="px-6 py-4">Name</th><th className="px-6 py-4">Email</th><th className="px-6 py-4">Role</th></tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {users.map(u => (
+                  <tr key={u._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 font-bold text-gray-800">{u.name}</td>
+                    <td className="px-6 py-4 text-gray-600">{u.email}</td>
+                    <td className="px-6 py-4 font-bold text-purple-600 uppercase text-xs">{u.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );
