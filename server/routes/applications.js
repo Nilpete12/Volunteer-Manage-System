@@ -4,9 +4,8 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// ------------------------------------
 // SUBMIT AN APPLICATION (Protected)
-// ------------------------------------
+
 router.post('/', verifyToken, async (req, res) => {
   try {
     const newApp = new Application(req.body);
