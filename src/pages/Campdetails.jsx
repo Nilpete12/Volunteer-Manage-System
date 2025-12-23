@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios'; // <--- Import Axios
+import axios from 'axios';
 import Donateform from '../components/Donateform'; 
 import { 
   Heart, Users, Clock, MapPin, CheckCircle, 
@@ -24,7 +24,6 @@ const CampaignDetails = () => {
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        // fetch by ID from your backend
         const res = await axios.get(`http://localhost:5000/api/campaigns/${id}`);
         setCampaign(res.data);
         setLoading(false);
@@ -37,6 +36,28 @@ const CampaignDetails = () => {
 
     fetchCampaign();
   }, [id]);
+
+  // --- SHARE HANDLER ---
+  const handleShare = async () => {
+    const shareData = {
+      title: campaign.title,
+      text: `Check out this campaign: ${campaign.title}`,
+      url: window.location.href,
+    };
+
+    try {
+      // Try using the native share menu (mobile/supported browsers)
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!'); 
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
 
   // --- LOADING STATE ---
   if (loading) {
@@ -55,17 +76,15 @@ const CampaignDetails = () => {
     return <Error />;
   }
 
-  // --- CALCULATIONS (Using Backend Field Names) ---
-  // Backend uses 'raisedAmount' and 'goalAmount'
+  // --- CALCULATIONS ---
   const raised = campaign.raisedAmount || 0;
-  const goal = campaign.goalAmount || 1; // Avoid divide by zero
+  const goal = campaign.goalAmount || 1;
   const volRegistered = campaign.volunteersRegistered || 0;
-  const volNeeded = campaign.volunteersNeeded || 10; // Default if missing
+  const volNeeded = campaign.volunteersNeeded || 10;
 
   const donationProgress = Math.min((raised / goal) * 100, 100);
   const volunteerProgress = Math.min((volRegistered / volNeeded) * 100, 100);
 
-  // Helper for Date display
   const daysLeft = Math.ceil((new Date(campaign.deadline) - new Date()) / (1000 * 60 * 60 * 24));
 
   return (
@@ -75,7 +94,7 @@ const CampaignDetails = () => {
       <Donateform 
         isOpen={isDonationModalOpen} 
         onClose={() => setIsDonationModalOpen(false)}
-        initialCampaignId={campaign._id} // MongoDB uses _id
+        initialCampaignId={campaign._id}
         campaignTitle={campaign.title}
       />
 
@@ -94,7 +113,7 @@ const CampaignDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           
-          {/* --- LEFT COLUMN (Story, Image, Details) --- */}
+          {/* --- LEFT COLUMN --- */}
           <div className="lg:col-span-2">
             
             {/* Hero Image */}
@@ -175,7 +194,6 @@ const CampaignDetails = () => {
                 {activeTab === 'shifts' && (
                   <div>
                      <h3 className="font-bold text-gray-900 mb-4">Upcoming Opportunities</h3>
-                     {/* NOTE: We haven't added Shifts to the Backend Model yet, so this will be empty for now */}
                      {campaign.shifts && campaign.shifts.length > 0 ? (
                        <div className="space-y-4">
                          {campaign.shifts.map((shift) => (
@@ -209,13 +227,13 @@ const CampaignDetails = () => {
             </div>
           </div>
 
-          {/* --- RIGHT COLUMN (Sticky Action Card) --- */}
+          {/* --- RIGHT COLUMN --- */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               
               {/* Action Card */}
               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-emerald-400 to-teal-500"></div>
                 
                 {/* Financial Stats */}
                 <div className="mb-8">
@@ -262,8 +280,12 @@ const CampaignDetails = () => {
                   </Link>
                 </div>
 
+                {/* Share Button (UPDATED) */}
                 <div className="mt-6 text-center">
-                  <button className="text-sm text-gray-400 hover:text-gray-600 flex items-center justify-center w-full transition-colors">
+                  <button 
+                    onClick={handleShare}
+                    className="text-sm text-gray-400 hover:text-emerald-600 hover:font-bold flex items-center justify-center w-full transition-all cursor-pointer"
+                  >
                     <Share2 className="w-4 h-4 mr-2" /> Share this cause
                   </button>
                 </div>
