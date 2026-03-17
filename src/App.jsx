@@ -15,6 +15,7 @@ import ScrollToTop from './components/ScrollToTop';
 import CampaignDetails from './pages/Campdetails';
 import Createcamp from './pages/Createcamp';
 import Admin from './pages/Admin';
+import AdminLogin from './pages/Adminlogin';
 
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/campaigns/:id" element={<CampaignDetails />} />
           <Route path="/create-campaign" element={<Createcamp />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
           
           
