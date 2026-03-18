@@ -1,6 +1,7 @@
 import express from 'express';
 import Campaign from '../models/Campaign.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import User from '../models/User.js'; 
 
 const router = express.Router();
 
@@ -35,6 +36,28 @@ router.get('/', async (req, res) => {
     // Sort by newest first (createdAt: -1)
     const campaigns = await Campaign.find().sort({ createdAt: -1 });
     res.status(200).json(campaigns);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ------------------------------------
+// 2.5 GET LOGGED-IN USER'S CAMPAIGNS (Optimized API)
+// ------------------------------------
+router.get('/my-campaigns/user', verifyToken, async (req, res) => {
+  try {
+    // req.user.id comes securely from the verifyToken middleware
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User account not found." });
+    }
+
+    // Database-level filtering: Only retrieve this specific user's campaigns
+    const myCampaigns = await Campaign.find({ 
+      organizer: user.name 
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(myCampaigns);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

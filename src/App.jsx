@@ -16,6 +16,7 @@ import CampaignDetails from './pages/Campdetails';
 import Createcamp from './pages/Createcamp';
 import Admin from './pages/Admin';
 import AdminLogin from './pages/Adminlogin';
+import UserDashboard from './pages/Userdash';
 
 const App = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="/create-campaign" element={<Createcamp />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
 
           
           

@@ -79,10 +79,10 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <div className="flex items-center text-gray-700 font-medium">
+                <Link to="/user-dashboard" className="flex items-center text-gray-700 font-bold hover:text-emerald-600 transition p-2 rounded-lg hover:bg-emerald-50">
                   <User className="h-5 w-5 mr-2 text-emerald-600" />
-                  <span>Hello, {user.name}</span>
-                </div>
+                  <span>{user.name}</span>
+                </Link>
                 <button 
                   onClick={handleLogout} 
                   className="flex items-center text-gray-600 hover:text-red-500 font-medium px-3 py-2 transition duration-200"
@@ -142,9 +142,9 @@ const Navbar = () => {
 
             {user ? (
                <div className="space-y-2">
-                 <div className="px-2 py-2 text-sm font-bold text-emerald-600 flex items-center">
+                 <Link to="/user-dashboard" className="px-2 py-2 text-sm font-bold text-emerald-600 flex items-center">
                    <User className="w-4 h-4 mr-2" /> {user.name}
-                 </div>
+                 </Link>
                  <button 
                    onClick={handleLogout}
                    className="block w-full text-left px-2 py-2 text-base font-medium text-red-500"
